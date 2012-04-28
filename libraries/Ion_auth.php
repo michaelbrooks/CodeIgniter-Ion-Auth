@@ -378,7 +378,7 @@ class Ion_auth
 				$this->email->clear();
 				$this->email->set_newline("\r\n");
 				$this->email->from($this->config->item('admin_email', 'ion_auth'), $this->config->item('site_title', 'ion_auth'));
-				$this->email->to($email);
+				$this->email->to($user->email);
 				$this->email->subject($this->config->item('site_title', 'ion_auth') . ' - Account Activation');
 				$this->email->message($message);
 
