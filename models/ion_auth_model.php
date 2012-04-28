@@ -442,9 +442,9 @@ class Ion_auth_model extends CI_Model
 			$password = $this->salt();
 
 			$data = array(
-				'password'                => $this->hash_password($password, $salt),
+				'password'                => $this->hash_password($password),
 				'forgotten_password_code' => NULL,
-				'forgotten_password_time' => NULL
+                'forgotten_password_time' => NULL
 			 );
 
 			$this->db->update($this->tables['users'], $data, array('forgotten_password_code' => $code));
@@ -486,6 +486,7 @@ class Ion_auth_model extends CI_Model
 			'password' => $new,
 			'remember_code' => NULL,
 			'forgotten_password_code' => NULL,
+            'forgotten_password_time' => NULL,
 			'active'                  => 1,
 			);
 
@@ -523,7 +524,7 @@ class Ion_auth_model extends CI_Model
 		                  ->where($this->identity_column, $identity)
 		                  ->limit(1)
 		                  ->get($this->tables['users']);
-		
+
 		if ($query->num_rows() !== 1)
 		{
 			$this->trigger_events(array('post_change_password', 'post_change_password_unsuccessful'));
@@ -642,11 +643,11 @@ class Ion_auth_model extends CI_Model
 			$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_unsuccessful'));
 			return FALSE;
 		}
-
-		$key = $this->hash_code(microtime().$identity);
-
+		
+		$key = $this->hash_code(uniqid(rand() . microtime() . $identity, TRUE));
+		
 		$this->forgotten_password_code = $key;
-
+		
 		$this->trigger_events('extra_where');
 
 		$update = array(
@@ -702,6 +703,7 @@ class Ion_auth_model extends CI_Model
 			$data = array(
 				'password'                => $this->hash_password($password, $salt),
 				'forgotten_password_code' => NULL,
+                'forgotten_password_time' => NULL,
 				'active'                  => 1,
 			 );
 
@@ -803,6 +805,38 @@ class Ion_auth_model extends CI_Model
 		return (isset($id)) ? $id : FALSE;
 	}
 
+    public function valid_login($identity, $password) {
+		if (empty($identity) || empty($password))
+		{
+			$this->set_error('login_unsuccessful');
+			return FALSE;
+		}
+
+		$this->trigger_events('extra_where');
+
+		$query = $this->db->select($this->identity_column . ', username, email, id, password, active, last_login')
+		                  ->where(sprintf("(".$this->identity_column." = '%1\$s')", $this->db->escape_str($identity)))
+		                  ->limit(1)
+		                  ->get($this->tables['users']);
+
+		$user = $query->row();
+
+		if ($query->num_rows() == 1)
+		{
+			$password = $this->hash_password_db($user->id, $password);
+
+			if ($this->hash_method == 'sha1' && $user->password === $password || $this->hash_method == 'bcrypt' && $password === true)
+			{
+                return $user;
+            }
+        }
+        
+        $this->trigger_events('post_login_unsuccessful');
+		$this->set_error('login_unsuccessful');
+
+		return FALSE;
+    }
+    
 	/**
 	 * login
 	 *
@@ -1523,6 +1557,17 @@ class Ion_auth_model extends CI_Model
 
 		return $_output;
 	}
+    
+    public function messages_array() {
+        $_output = array();
+		foreach ($this->messages as $message)
+		{
+            $messageLang = $this->lang->line($message) ? $this->lang->line($message) : '##' . $message . '##';
+            $_output[] = $messageLang;
+		}
+
+		return $_output;
+    }
 
 	/**
 	 * set_error
@@ -1558,6 +1603,17 @@ class Ion_auth_model extends CI_Model
 
 		return $_output;
 	}
+    
+    public function errors_array() {
+        $_output = array();
+		foreach ($this->errors as $error)
+		{
+            $errorLang = $this->lang->line($error) ? $this->lang->line($error) : '##' . $error . '##';
+            $_output[] = $errorLang;
+		}
+
+		return $_output;
+    }
 
 	protected function _filter_data($table, $data)
 	{

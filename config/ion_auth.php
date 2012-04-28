@@ -52,12 +52,12 @@
 	 * 		    
 	 */
 	
-	$config['hash_method'] = 'sha1';		// IMPORTANT: Make sure this is set to either sha1 or bcrypt 
+	$config['hash_method'] = 'bcrypt';		// IMPORTANT: Make sure this is set to either sha1 or bcrypt 
 	
 	/**
 	 * Default rounds used for Bcrypt only 
 	 */
-	$config['default_rounds'] = 8;		// This does not apply if random_rounds is set to true
+	$config['default_rounds'] = 10;		// This does not apply if random_rounds is set to true
 	
 	/**
 	 *
@@ -116,12 +116,12 @@
 	/**
 	 * Maximum Allowed Length of Password
 	 **/
-	$config['max_password_length'] = 20;
+	$config['max_password_length'] = 30;
 
 	/**
 	 * Email Activation for registration
 	 **/
-	$config['email_activation']    = false;
+	$config['email_activation']    = true;
 
 	/**
 	 * Manual Activation for registration
@@ -131,7 +131,7 @@
 	/**
 	 * Allow users to be remembered and enable auto-login
 	 **/
-	$config['remember_users']      = true;
+	$config['remember_users']      = false;
 	
 	/**
 	 * How long to remember the user (seconds)
@@ -162,10 +162,10 @@
 	 * Folder where email templates are stored.
      * Default : auth/
 	 **/
-	$config['email_templates']     = 'auth/email/';
+	$config['email_templates']     = 'email/';
 	
 	/**
-	 * Activate Account Email Template
+	 * activate Account Email Template
      * Default : activate.tpl.php
 	 **/
 	$config['email_activate']   = 'activate.tpl.php';
@@ -180,12 +180,12 @@
 	 * Forgot Password Complete Email Template
      * Default : new_password.tpl.php
 	 **/
-	$config['email_forgot_password_complete']   = 'new_password.tpl.php';
+	$config['email_password_changed']   = 'password_changed.tpl.php';
 	
 	/**
 	 * Salt Length
 	 **/
-	$config['salt_length'] = 10;
+	$config['salt_length'] = 20;
 
 	/**
 	 * Should the salt be stored in the database?
@@ -199,7 +199,7 @@
 	 * The number of seconds after which a forgot password request will
 	 * expire. If set to 0, forgot password requests will not expire.
 	 **/
-	$config['forgot_password_expiration'] = 0;
+	$config['forgot_password_expiration'] = 10800;
 	
 	/**
 	 * Message Start Delimiter
