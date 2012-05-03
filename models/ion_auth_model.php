@@ -192,8 +192,7 @@ class Ion_auth_model extends CI_Model
 				$rounds = array('rounds' => $this->default_rounds);
 			}
 
-			$CI=& get_instance();
-			$CI->load->library('bcrypt',$rounds);
+			$this->load->library('bcrypt',$rounds);
 		}
 		
 		$this->trigger_events('model_constructor');
@@ -226,8 +225,7 @@ class Ion_auth_model extends CI_Model
 		//bcrypt
 		if ($use_sha1_override === FALSE && $this->hash_method == 'bcrypt')
 		{
-			$CI=& get_instance();
-			return $CI->bcrypt->hash($password);
+			return $this->bcrypt->hash($password);
 		}
 
 
@@ -271,17 +269,15 @@ class Ion_auth_model extends CI_Model
 		}
 
 		// bcrypt
-	     if ($use_sha1_override === FALSE && $this->hash_method == 'bcrypt')
+		if ($use_sha1_override === FALSE && $this->hash_method == 'bcrypt')
 		{
-			$CI=& get_instance();
-			if ($CI->bcrypt->verify($password,$hash_password_db->password))
+			if ($this->bcrypt->verify($password,$hash_password_db->password))
 			{
-			 return TRUE;
+				return TRUE;
 			}
-			 return FALSE;
+			
+			return FALSE;
 		}
-
-
 
 		if ($this->store_salt)
 		{
@@ -439,10 +435,8 @@ class Ion_auth_model extends CI_Model
 
 		if ($this->db->count_all_results($this->tables['users']) > 0)
 		{
-			$password = $this->salt();
-
 			$data = array(
-				'password'                => $this->hash_password($password),
+				'password'                => $this->hash_password($password, $salt),
 				'forgotten_password_code' => NULL,
                 'forgotten_password_time' => NULL
 			 );
@@ -475,6 +469,13 @@ class Ion_auth_model extends CI_Model
 		                  ->where($this->identity_column, $identity)
 		                  ->limit(1)
 		                  ->get($this->tables['users']);
+		
+		if ($query->num_rows() !== 1)
+		{
+			$this->trigger_events(array('post_change_password', 'post_change_password_unsuccessful'));
+			$this->set_error('password_change_unsuccessful');
+			return FALSE;
+		}
 
 		$result = $query->row();
 		
@@ -486,8 +487,7 @@ class Ion_auth_model extends CI_Model
 			'password' => $new,
 			'remember_code' => NULL,
 			'forgotten_password_code' => NULL,
-            'forgotten_password_time' => NULL,
-			'active'                  => 1,
+			'forgotten_password_time' => NULL,
 			);
 
 		$this->trigger_events('extra_where');
@@ -763,7 +763,7 @@ class Ion_auth_model extends CI_Model
 			'username'   => $username,
 			'password'   => $password,
 			'email'      => $email,
-			'ip_address' => sprintf('%u', ip2long($ip_address)),
+			'ip_address' => $ip_address,
 			'created_on' => time(),
 			'last_login' => time(),
 			'active'     => ($manual_activation === false ? 1 : 0)
