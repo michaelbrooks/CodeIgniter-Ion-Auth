@@ -916,7 +916,15 @@ class Ion_auth_model extends CI_Model
 
 		return FALSE;
 	}
-
+	
+	/**
+	 * If a login has failed because the user was not activated,
+	 * this will return the user data. Otherwise, returns FALSE.
+	 */
+	public function inactive_user() {
+		return $this->inactive_user;
+	}
+	
 	/**
 	 * is_max_login_attempts_exceeded
 	 * Based on code from Tank Auth, by Ilya Konyukhov (https://github.com/ilkon/Tank-Auth)
