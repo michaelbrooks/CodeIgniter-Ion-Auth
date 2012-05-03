@@ -852,16 +852,16 @@ class Ion_auth_model extends CI_Model
 
 			if ($this->hash_method == 'sha1' && $user->password === $password || $this->hash_method == 'bcrypt' && $password === true)
 			{
-                return $user;
-            }
-        }
-        
-        $this->trigger_events('post_login_unsuccessful');
+				return $user;
+			}
+		}
+		
+		$this->trigger_events('post_login_unsuccessful');
 		$this->set_error('login_unsuccessful');
 
 		return FALSE;
-    }
-    
+	}
+
 	/**
 	 * login
 	 *
@@ -893,39 +893,39 @@ class Ion_auth_model extends CI_Model
 
 			if ($this->hash_method == 'sha1' && $user->password === $password || $this->hash_method == 'bcrypt' && $password === true)
 			{
-                if ($user->active == 0)
-                {
-                    $this->trigger_events('post_login_unsuccessful');
-                    $this->set_error('login_unsuccessful_not_active');
+				if ($user->active == 0)
+				{
+					$this->trigger_events('post_login_unsuccessful');
+					$this->set_error('login_unsuccessful_not_active');
 
 					$this->inactive_user = $user;
 					
-                    return FALSE;
-                }
+					return FALSE;
+				}
 
-                $session_data = array(
-                    'identity'             => $user->{$this->identity_column},
-                    'username'             => $user->username,
-                    'email'                => $user->email,
-                    'user_id'              => $user->id, //everyone likes to overwrite id so we'll use user_id
-                    'old_last_login'       => $user->last_login
-                );
+				$session_data = array(
+					'identity'             => $user->{$this->identity_column},
+					'username'             => $user->username,
+					'email'                => $user->email,
+					'user_id'              => $user->id, //everyone likes to overwrite id so we'll use user_id
+					'old_last_login'       => $user->last_login
+				);
 
-                $this->update_last_login($user->id);
+				$this->update_last_login($user->id);
 				
 				$this->clear_login_attempts($identity);
 				
-                $this->session->set_userdata($session_data);
+				$this->session->set_userdata($session_data);
 
-                if ($remember && $this->config->item('remember_users', 'ion_auth'))
-                {
-                    $this->remember_user($user->id);
-                }
+				if ($remember && $this->config->item('remember_users', 'ion_auth'))
+				{
+					$this->remember_user($user->id);
+				}
 
-                $this->trigger_events(array('post_login', 'post_login_successful'));
-                $this->set_message('login_successful');
+				$this->trigger_events(array('post_login', 'post_login_successful'));
+				$this->set_message('login_successful');
 
-                return TRUE;
+				return TRUE;
 			}
 		}
 
@@ -1658,8 +1658,8 @@ class Ion_auth_model extends CI_Model
 		$_output = '';
 		foreach ($this->messages as $message)
 		{
-            $messageLang = $this->lang->line($message) ? $this->lang->line($message) : '##' . $message . '##';
-            $_output .= $this->message_start_delimiter . $messageLang . $this->message_end_delimiter;
+			$messageLang = $this->lang->line($message) ? $this->lang->line($message) : '##' . $message . '##';
+			$_output .= $this->message_start_delimiter . $messageLang . $this->message_end_delimiter;
 		}
 
 		return $_output;
@@ -1669,8 +1669,8 @@ class Ion_auth_model extends CI_Model
         $_output = array();
 		foreach ($this->messages as $message)
 		{
-            $messageLang = $this->lang->line($message) ? $this->lang->line($message) : '##' . $message . '##';
-            $_output[] = $messageLang;
+			$messageLang = $this->lang->line($message) ? $this->lang->line($message) : '##' . $message . '##';
+			$_output[] = $messageLang;
 		}
 
 		return $_output;
@@ -1704,8 +1704,8 @@ class Ion_auth_model extends CI_Model
 		$_output = '';
 		foreach ($this->errors as $error)
 		{
-            $errorLang = $this->lang->line($error) ? $this->lang->line($error) : '##' . $error . '##';
-            $_output .= $this->error_start_delimiter . $errorLang . $this->error_end_delimiter;
+			$errorLang = $this->lang->line($error) ? $this->lang->line($error) : '##' . $error . '##';
+			$_output .= $this->error_start_delimiter . $errorLang . $this->error_end_delimiter;
 		}
 
 		return $_output;
@@ -1715,8 +1715,8 @@ class Ion_auth_model extends CI_Model
         $_output = array();
 		foreach ($this->errors as $error)
 		{
-            $errorLang = $this->lang->line($error) ? $this->lang->line($error) : '##' . $error . '##';
-            $_output[] = $errorLang;
+			$errorLang = $this->lang->line($error) ? $this->lang->line($error) : '##' . $error . '##';
+			$_output[] = $errorLang;
 		}
 
 		return $_output;
