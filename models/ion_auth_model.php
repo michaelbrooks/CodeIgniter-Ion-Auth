@@ -896,7 +896,9 @@ class Ion_auth_model extends CI_Model
                 );
 
                 $this->update_last_login($user->id);
-
+				
+				$this->clear_login_attempts($identity);
+				
                 $this->session->set_userdata($session_data);
 
                 if ($remember && $this->config->item('remember_users', 'ion_auth'))
@@ -911,6 +913,8 @@ class Ion_auth_model extends CI_Model
 			}
 		}
 
+		$this->increase_login_attempts($identity);
+		
 		$this->trigger_events('post_login_unsuccessful');
 		$this->set_error('login_unsuccessful');
 
@@ -936,8 +940,7 @@ class Ion_auth_model extends CI_Model
 		if ($this->config->item('track_login_attempts', 'ion_auth')) {
 			$max_attempts = $this->config->item('maximum_login_attempts', 'ion_auth');
 			if ($max_attempts > 0) {
-				$ip_address = sprintf('%u', ip2long($this->input->ip_address()));
-				$attempts = $this->get_attempts_num($ip_address, $identity);
+				$attempts = $this->get_attempts_num($identity);
 				return $attempts >= $max_attempts;
 			}
 		}
@@ -953,7 +956,7 @@ class Ion_auth_model extends CI_Model
 	 */
 	function get_attempts_num($identity)
 	{
-		$ip_address = sprintf('%u', ip2long($this->input->ip_address()));
+		$ip_address = $this->input->ip_address();
 		
 		$this->db->select('1', FALSE);
 		$this->db->where('ip_address', $ip_address);
@@ -971,7 +974,7 @@ class Ion_auth_model extends CI_Model
 	 **/
 	public function increase_login_attempts($identity) {
 		if ($this->config->item('track_login_attempts', 'ion_auth')) {
-			$ip_address = sprintf('%u', ip2long($this->input->ip_address()));
+			$ip_address = $this->input->ip_address();
 			$this->db->insert($this->tables['login_attempts'], array('ip_address' => $ip_address, 'login' => $identity, 'time' => time()));
 		}
 	}
@@ -984,7 +987,7 @@ class Ion_auth_model extends CI_Model
 	 **/
 	public function clear_login_attempts($identity, $expire_period = 86400) {
 		if ($this->config->item('track_login_attempts', 'ion_auth')) {
-			$ip_address = sprintf('%u', ip2long($this->input->ip_address()));
+			$ip_address = $this->input->ip_address();
 			
 			$this->db->where(array('ip_address' => $ip_address, 'login' => $identity));
 			// Purge obsolete login attempts
