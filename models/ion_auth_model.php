@@ -139,6 +139,13 @@ class Ion_auth_model extends CI_Model
 	 * @var string
 	 **/
 	protected $error_end_delimiter;
+	
+	/**
+	 * If the account is found to be inactive during login()
+	 * this will contain the account data.
+	 */
+	public $inactive_user;
+	
 
 	public function __construct()
 	{
@@ -194,6 +201,8 @@ class Ion_auth_model extends CI_Model
 
 			$this->load->library('bcrypt',$rounds);
 		}
+		
+		$this->inactive_user = FALSE;
 		
 		$this->trigger_events('model_constructor');
 	}
@@ -873,6 +882,8 @@ class Ion_auth_model extends CI_Model
                     $this->trigger_events('post_login_unsuccessful');
                     $this->set_error('login_unsuccessful_not_active');
 
+					$this->inactive_user = $user;
+					
                     return FALSE;
                 }
 
