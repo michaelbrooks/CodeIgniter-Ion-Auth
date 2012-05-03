@@ -659,21 +659,37 @@ class Ion_auth_model extends CI_Model
 		
 		$this->trigger_events('extra_where');
 
-		$update = array(
-			'forgotten_password_code' => $key,
-			'forgotten_password_time' => time()
-		);
+		$query = $this->db->select($this->identity_column . ', username, email, id, password, active, last_login')
+		                  ->where(sprintf("(".$this->identity_column." = '%1\$s')", $this->db->escape_str($identity)))
+		                  ->limit(1)
+		                  ->get($this->tables['users']);
 
-		$this->db->update($this->tables['users'], $update, array($this->identity_column => $identity));
+		if ($query->num_rows() === 1)
+		{
+			$user = $query->row();
+			
+			if ($user->active == 0) {
+				$this->inactive_user = $user;
+				
+				$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_unsuccessful'));
+				return FALSE;
+			}
+		
+			$update = array(
+				'forgotten_password_code' => $key,
+				'forgotten_password_time' => time()
+			);
 
-		$return = $this->db->affected_rows() == 1;
+			$this->db->update($this->tables['users'], $update, array($this->identity_column => $identity));
 
-		if ($return)
-			$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_successful'));
-		else
-			$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_unsuccessful'));
-
-		return $return;
+			if ($this->db->affected_rows() == 1) {
+				$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_successful'));
+				return TRUE;
+			}
+		}
+		
+		$this->trigger_events(array('post_forgotten_password', 'post_forgotten_password_unsuccessful'));
+		return FALSE;
 	}
 
 	/**
