@@ -246,7 +246,9 @@ class Ion_auth
 
 			$user = $this->ion_auth_model->user($id)->row();
 
-			return $this->send_activation_email($user);
+			$this->send_activation_email($user);
+			
+			return $id;
 		}
 	}
 
